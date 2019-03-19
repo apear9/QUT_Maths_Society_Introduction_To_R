@@ -1,7 +1,7 @@
 ---
 title: "Introduction to R"
-author: "Alan R. Pearse, Natural Resources Society"
-date: "24 July 2018"
+author: "Alan R. Pearse, QUT Mathematics Society"
+date: "19 March, 2019"
 output: pdf_document
 ---
 
@@ -492,4 +492,164 @@ ggplot(
   theme(
     legend.position = "bottom" # legend placement
   )
+```
+
+## Simple modelling of data
+
+Statistical modelling is a huge area and a can of worms, so we won't go too far into it. But here, we will do some linear modelling of data. 
+
+Linear models are
+
+* A general case of a few very old methods (T-tests, ANOVA)
+* Useful for statistical modelling of general trends
+* Very easy to compute
+* Make assumptions which can be restrictive
+
+In R, linear models are computed using the `lm` function.
+
+### Running a model
+
+Let's say we are interested in the correlation between $\log(\text{zinc})$ concentrations in soil and distance away from the river. We expect it to decrease with distance because zinc is a heavy metal that settles quickly from the water column during floods. 
+
+It is usually a good idea to make a plot first, to see whether the relationship is clear. 
+
+```{r}
+meuse_plot <- ggplot(data = meuse, aes(x = dist, y = log_zinc)) +
+  geom_point() +
+  theme_bw()
+```
+
+This plot confirms our general ideas. So now we can run a model using this code:
+
+```{r}
+model <- lm(
+  log_zinc ~ dist, # Formula: y ~ x1 + x2 + x3 + ...
+  data = meuse     # The data set
+)
+```
+
+The model looks like this:
+
+```{r}
+meuse_plot + 
+  geom_smooth(method = lm, lty = 2, col = "red")
+```
+
+If we want a statistical summary of our model, we can run the following code. There is a lot going on here and it will be explained in the workshop.
+
+```{r}
+summary(model)
+```
+
+### Model diagnostics
+
+Linear modelling makes a few assumptions, namely that:
+
+* The errors (residuals) are normally distributed
+* The errors are homoscedastic
+
+We need to check these to see whether a linear model really is appropriate for our data. This is usually done graphically using a normal qq-plot and a residuals vs fitted plot.
+
+Thankfully, we can get these really easily for our linear models with
+
+```{r}
+par(mfrow = c(1, 2))
+plot(model, which = 1:2)
+```
+
+## Programming elements in R
+
+R is a programming language, so it comes with all the basic programming elements such as loops.
+
+### Ifs
+
+Sometimes you want code to execute one way if a certain logical condition is true and another if it is not. Here, you need an if statement. In R, these look like
+
+```{r}
+x <- runif(1)
+x # show what x is
+logical_condition <- x > 0.5
+logical_condition # is x greater than .5?
+if(logical_condition){
+  print("Yee") # executes if true
+} else {
+  print("Haw") # executes if false
+}
+```
+
+### Writing a loop
+
+The most common type of loop is a for loop. In R, they are set up like this:
+
+```{r}
+for(i in 1:10){
+  print((1:i)^2)
+}
+```
+
+Pretty simple right? In this case, there's an index $i$ which takes values from $1$ through to $10$ and in each iteration, we display all the squares of the numbers from $1$ through to $i$. 
+
+These can be used to accomplish great things.
+
+### Writing a function
+
+If we have a process that we need to do repeatedly, we can set up a function; a set of code that accepts some inputs and returns an output after performing a fixed operation. 
+
+In R, the anatomy of a function is
+
+```{r}
+do_something_useless <- function(x, y, z){
+  # This function takes three numbers x, y, z and computes 
+  # x + y * z^2 - y^2 * z
+  return(x + y * z^2 - y^2 * z)
+}
+```
+
+Once we define a function, we can use it by writing down its name and giving it its inputs.
+
+```{r}
+do_something_useless(1, 2, 3)
+```
+
+### Writing our own cumsum function
+
+Say we want to write a function that takes a vector of numbers and computes the cumulative sum at each element of that vector. This is how we would do it in R:
+
+```{r}
+cumsum_ <- function(
+  vec # Our vector of numbers
+){
+  
+  # Compute how long the vector is
+  number_elements <- length(vec)
+  
+  # Assign an empty vector to store results
+  cumulative_sum <- vector("numeric", number_elements)
+  
+  # Run a for loop
+  for(i in 1:number_elements){
+    # Assign i'th cumulative sum
+    cumulative_sum[i] <- sum(vec[1:i])
+  }
+  
+  # Spit out result
+  return(cumulative_sum)
+  
+}
+```
+
+Now we want to test our function. R has its own inbuilt `cumsum` so we will check our function's answers against that.
+
+```{r}
+# Test 1:
+cumsum_(1:3) # our function
+cumsum(1:3) # inbuilt
+
+# Test 2:
+cumsum_(c(608, 1, 999))
+cumsum(c(608, 1, 999))
+
+# Test 3:
+cumsum_(c(-1, 1, 2))
+cumsum(c(-1, 1, 2))
 ```
