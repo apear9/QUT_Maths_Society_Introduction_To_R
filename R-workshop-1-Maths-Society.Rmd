@@ -517,6 +517,7 @@ It is usually a good idea to make a plot first, to see whether the relationship 
 meuse_plot <- ggplot(data = meuse, aes(x = dist, y = log_zinc)) +
   geom_point() +
   theme_bw()
+meuse_plot
 ```
 
 This plot confirms our general ideas. So now we can run a model using this code:
